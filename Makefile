@@ -16,7 +16,7 @@ install: venv
 	$(PIP) install --upgrade pip
 	$(PIP) install -r requirements-dev.txt
 
-build:
+build: test
 	aws ecr get-login-password --region $(AWS_REGION) | \
 	  docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
 	docker build --platform linux/arm64 -t school-assistant .
