@@ -1,0 +1,29 @@
+{
+  "success": 1,
+  "data": [
+    {
+      "subject_name": "English",
+      "teacher_name": "Ms Johnson",
+      "room_name": "Room 12",
+      "period_name": "Period 1",
+      "start_time": "09:00",
+      "end_time": "10:00"
+    },
+    {
+      "subject_name": "PE",
+      "teacher_name": "Mr Davies",
+      "room_name": "Sports Hall",
+      "period_name": "Period 3",
+      "start_time": "11:00",
+      "end_time": "12:00"
+    },
+    {
+      "subject_name": "Science",
+      "teacher_name": "Dr Patel",
+      "room_name": "Lab 2",
+      "period_name": "Period 5",
+      "start_time": "14:00",
+      "end_time": "15:00"
+    }
+  ]
+}

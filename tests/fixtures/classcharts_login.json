@@ -1,0 +1,11 @@
+{
+  "success": 1,
+  "data": {
+    "id": 99999,
+    "name": "Test User",
+    "email": "test@example.com"
+  },
+  "meta": {
+    "session_id": "test_session_abc123"
+  }
+}

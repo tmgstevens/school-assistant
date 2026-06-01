@@ -1,0 +1,14 @@
+.env
+.venv/
+.claude/
+build/
+lambda.zip
+__pycache__/
+*.pyc
+.pytest_cache/
+terraform/.terraform/
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/.terraform.lock.hcl
+terraform.tfvars
+*.tfvars

@@ -1,0 +1,21 @@
+aws_region           = "eu-west-1"
+classcharts_email    = "parent@example.com"
+classcharts_password = "your-classcharts-password"
+google_client_id     = "your-google-oauth-client-id.apps.googleusercontent.com"
+google_client_secret = "your-google-oauth-client-secret"
+google_refresh_token = "your-google-refresh-token"
+anthropic_api_key    = "sk-ant-..."
+pupil_names          = "Child1,Child2"
+alexa_skill_ids      = ["amzn1.ask.skill.your-skill-id"]
+
+# Free-text context injected into the briefing prompt.
+# Include children's names, calendar attendee email mappings, and anything
+# else the LLM needs to know about the family.
+family_context = <<-EOT
+  The children are Child1 and Child2.
+
+  Calendar attendee emails — use these to identify which child an event belongs to:
+  - Child1: child1@gmail.com
+  - Child2: child2@gmail.com
+  - Parent account (ignore as an attendee indicator): parent@gmail.com
+EOT

@@ -1,0 +1,20 @@
+{
+  "items": [
+    {
+      "summary": "Alice football training",
+      "start": {"dateTime": "2026-05-20T16:00:00Z"},
+      "end": {"dateTime": "2026-05-20T17:30:00Z"},
+      "description": "At the rec ground, remember boots"
+    },
+    {
+      "summary": "Put bins out",
+      "start": {"date": "2026-05-20"},
+      "end": {"date": "2026-05-21"}
+    },
+    {
+      "summary": "Bob dentist",
+      "start": {"dateTime": "2026-05-20T15:30:00Z"},
+      "end": {"dateTime": "2026-05-20T16:00:00Z"}
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "success": 1,
+  "data": {
+    "due": [
+      {
+        "subject": "Mathematics",
+        "title": "Algebra worksheet",
+        "description": "Complete exercises 1-10 on page 45",
+        "due_date": "2026-05-20"
+      }
+    ],
+    "issued": []
+  }
+}
