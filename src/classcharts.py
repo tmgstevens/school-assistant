@@ -117,7 +117,7 @@ class ClassChartsClient:
                 due_date=hw.get("due_date", date_str),
                 pupil_name=pupil.name,
             )
-            for hw in response.json().get("data", [])
+            for hw in response.json().get("data", {}).get("due", [])
         ]
 
     def get_timetable(self, pupil: Pupil, for_date: date) -> list[Lesson]:
@@ -178,10 +178,10 @@ class ClassChartsClient:
                         {"subject": l.subject, "teacher": l.teacher, "room": l.room,
                          "start": l.start_time, "pupil": l.pupil_name}
                     )
-            cutoff = datetime.now(timezone.utc) - timedelta(days=ANNOUNCEMENT_DAYS)
+            cutoff = datetime.now() - timedelta(days=ANNOUNCEMENT_DAYS)
             for a in self.get_announcements(pupil):
                 try:
-                    ts = datetime.fromisoformat(a.timestamp.replace("Z", "+00:00"))
+                    ts = datetime.fromisoformat(a.timestamp.replace("Z", ""))
                     if ts < cutoff:
                         continue
                 except (ValueError, AttributeError):
