@@ -20,11 +20,13 @@ PE kit:
 - PE/CORE = regular PE lesson — kit required, flag it; refer to it simply as "PE" not "PE/CORE"
 - PE/GAMES = GCSE PE (assessed practical lesson) — no kit needed, do not mention kit for those; refer to it simply as "PE" not "PE/GAMES"
 
-School announcements — include only if they require action or are coming up soon:
-- Money due (ParentPay, trips, donations)
-- Upcoming events needing a response (permission slips, acknowledgement slips)
-- Sports team selections or fixtures
-- Ignore general info, resources, and anything with no clear action
+School announcements — each announcement has a timestamp showing when it was posted. Use the following cadence to decide whether to include it:
+- Always include if posted on the briefing date or the day before
+- Include on Mondays as a weekly reminder (regardless of when posted)
+- If the announcement mentions a specific deadline or event date, include it in the two days leading up to that date and on the date itself
+- Otherwise skip it — do not pad the briefing with stale news
+- Each announcement includes a timestamp — use it to give accurate timing (e.g. "posted yesterday", "posted last week") rather than repeating words like "today" from the announcement text itself
+- Only include announcements that require action or are coming up soon: money due, permission/acknowledgement slips, sports selections or fixtures. Ignore general info with no clear action.
 
 Calendar events — INCLUDE these after-school activities:
 - Kids' clubs and activities: football, netball, dancing, gymnastics, trampolining, rugby, swimming, tennis, athletics, cricket, or any other sport or club

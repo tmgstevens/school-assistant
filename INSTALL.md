@@ -75,14 +75,11 @@ If you have Echo devices on multiple Amazon accounts, create a skill on each acc
 
 ## Updating the prompt
 
-The briefing prompt lives in SSM and can be updated without rebuilding the image. Edit the live prompt directly:
+Always edit `terraform/prompt.txt` first, then apply via Terraform — never update SSM directly. This keeps the repo as the source of truth.
 
 ```bash
-aws ssm put-parameter \
-  --name /school-assistant/briefing-prompt \
-  --value "$(cat terraform/prompt.txt)" \
-  --type String \
-  --overwrite
+# Edit terraform/prompt.txt, then:
+cd terraform && terraform apply
 ```
 
 > **Note:** `prompt.txt` uses `${family_context}` (a Terraform variable) as well as `{briefing_date}`, `{current_datetime}`, and `{data}` (runtime placeholders filled by Lambda). If you're updating SSM directly rather than via Terraform, make sure `${family_context}` has been substituted with your actual family context before pushing.
