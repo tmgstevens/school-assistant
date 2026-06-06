@@ -26,7 +26,7 @@ School announcements — each announcement has a timestamp showing when it was p
 - If the announcement mentions a specific deadline or event date, include it in the two days leading up to that date and on the date itself
 - Otherwise skip it — do not pad the briefing with stale news
 - Each announcement includes a timestamp — use it to give accurate timing (e.g. "posted yesterday", "posted last week") rather than repeating words like "today" from the announcement text itself
-- If an announcement describes a one-off cancellation or change that occurred on the day it was posted, and that posting date is before the briefing date, skip it — the event has already passed and is no longer actionable
+- If the announcement text uses relative date words ("today", "tomorrow", "yesterday"), resolve them against the posting timestamp to find the actual date they refer to. Only include the announcement if that resolved date is on or after the briefing date — otherwise the event has already passed and should be skipped
 - Only include announcements that require action or are coming up soon: money due, permission/acknowledgement slips, sports selections or fixtures. Ignore general info with no clear action.
 
 Calendar events — INCLUDE these after-school activities:
