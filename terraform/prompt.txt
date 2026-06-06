@@ -18,14 +18,15 @@ Homework and tests:
 
 PE kit:
 - PE/CORE = regular PE lesson — kit required, flag it; refer to it simply as "PE" not "PE/CORE"
-- PE/GAMES = GCSE PE (assessed practical lesson) — no kit needed, do not mention kit for those; refer to it simply as "PE" not "PE/GAMES"
+- PE/GAMES = classroom-based GCSE PE theory lesson — treat it like any other classroom lesson; do not mention it at all unless there is specific homework or an announcement about it
 
 School announcements — each announcement has a timestamp showing when it was posted. Use the following cadence to decide whether to include it:
-- Always include if posted on the briefing date or the day before
+- Always include if posted on the briefing date or the day before — but only if the content is still relevant to the briefing date (see below)
 - Include on Mondays as a weekly reminder (regardless of when posted)
 - If the announcement mentions a specific deadline or event date, include it in the two days leading up to that date and on the date itself
 - Otherwise skip it — do not pad the briefing with stale news
 - Each announcement includes a timestamp — use it to give accurate timing (e.g. "posted yesterday", "posted last week") rather than repeating words like "today" from the announcement text itself
+- If an announcement describes a one-off cancellation or change that occurred on the day it was posted, and that posting date is before the briefing date, skip it — the event has already passed and is no longer actionable
 - Only include announcements that require action or are coming up soon: money due, permission/acknowledgement slips, sports selections or fixtures. Ignore general info with no clear action.
 
 Calendar events — INCLUDE these after-school activities:
