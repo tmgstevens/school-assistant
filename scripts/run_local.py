@@ -11,13 +11,14 @@ Usage:
     python scripts/run_local.py --date 2026-05-21   # test a specific date
     python scripts/run_local.py --skip-calendar      # skip Google Calendar
     python scripts/run_local.py --skip-claude        # print raw data only
+    python scripts/run_local.py --query "what homework does Alice have this week"
 """
 
 import argparse
 import json
 import os
 import sys
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -34,17 +35,78 @@ def section(title: str) -> None:
     print(f"{'─' * 60}")
 
 
+def _run_query(query: str, from_date: date, pupil_names: list, skip_calendar: bool) -> None:
+    to_date = from_date + timedelta(days=7)
+    print(f"\nSchool Assistant — query mode")
+    print(f"Query: {query}")
+    print(f"Date range: {from_date} to {to_date}")
+
+    section("ClassCharts (7-day range)")
+    from classcharts import ClassChartsClient
+
+    cc = ClassChartsClient(os.environ["CLASSCHARTS_EMAIL"], os.environ["CLASSCHARTS_PASSWORD"])
+    school_data = cc.fetch_range(pupil_names, from_date, to_date)
+
+    print(f"  Homework: {len(school_data['homework'])} items")
+    print(f"  Timetable: {len(school_data['timetable'])} entries")
+    print(f"  Announcements: {len(school_data['announcements'])} items")
+
+    combined = dict(school_data)
+
+    if not skip_calendar:
+        section("Google Calendar (7-day range)")
+        import requests as _req
+        from google_calendar import GoogleCalendarClient
+
+        token_resp = _req.post("https://oauth2.googleapis.com/token", data={
+            "grant_type": "refresh_token",
+            "refresh_token": os.environ["GOOGLE_REFRESH_TOKEN"],
+            "client_id": os.environ["GOOGLE_CLIENT_ID"],
+            "client_secret": os.environ["GOOGLE_CLIENT_SECRET"],
+        }, timeout=10)
+        token_resp.raise_for_status()
+
+        cal = GoogleCalendarClient.__new__(GoogleCalendarClient)
+        cal._access_token = token_resp.json()["access_token"]
+
+        all_events = cal.get_events_range(from_date, to_date)
+
+        combined["calendar_events"] = [
+            {"summary": e.summary, "start": e.start, "end": e.end,
+             "description": e.description, "all_day": e.all_day, "attendees": e.attendees}
+            for e in all_events
+        ]
+        print(f"  Events: {len(all_events)} items")
+    else:
+        combined["calendar_events"] = []
+
+    section("Claude answer")
+    from claude_client import ClaudeClient
+    from zoneinfo import ZoneInfo
+
+    now = datetime.now(ZoneInfo("Europe/London"))
+    family_context = os.environ.get("FAMILY_CONTEXT", "")
+    claude = ClaudeClient(api_key=os.environ["ANTHROPIC_API_KEY"])
+    answer = claude.answer_query(query, combined, now, family_context=family_context)
+    print(f"\n{answer}\n")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--date", help="Date to query (YYYY-MM-DD), defaults to today")
     parser.add_argument("--skip-calendar", action="store_true")
     parser.add_argument("--skip-claude", action="store_true")
+    parser.add_argument("--query", help="Ask a specific question (uses 7-day window, bypasses cache)")
     args = parser.parse_args()
 
     target_date = (
         datetime.strptime(args.date, "%Y-%m-%d").date() if args.date else date.today()
     )
     pupil_names = [n.strip() for n in os.environ.get("PUPIL_NAMES", "").split(",") if n.strip()]
+
+    if args.query:
+        _run_query(args.query, target_date, pupil_names, args.skip_calendar)
+        return
 
     print(f"\nSchool Assistant — local run for {target_date.strftime('%A %d %B %Y')}")
     print(f"Pupils: {', '.join(pupil_names)}")
@@ -114,9 +176,16 @@ def main() -> None:
     if not args.skip_claude:
         section("Claude briefing")
         from claude_client import ClaudeClient
+        from zoneinfo import ZoneInfo
+
+        prompt_path = Path(__file__).parent.parent / "terraform" / "prompt.txt"
+        prompt_template = prompt_path.read_text().replace(
+            "${family_context}", os.environ.get("FAMILY_CONTEXT", "")
+        )
+        now = datetime.now(ZoneInfo("Europe/London"))
 
         claude = ClaudeClient(api_key=os.environ["ANTHROPIC_API_KEY"])
-        briefing = claude.synthesise_briefing(combined, target_date)
+        briefing = claude.synthesise_briefing(combined, target_date, now=now, prompt_template=prompt_template)
         print(f"\n{briefing}\n")
     else:
         print("\n(skipped — run without --skip-claude to see Claude output)")

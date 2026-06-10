@@ -62,6 +62,25 @@ class ClaudeClient:
         self._client = anthropic.Anthropic(api_key=api_key)
         self._model = model
 
+    def answer_query(self, query: str, data: dict, now: datetime, family_context: str = "") -> str:
+        prompt = f"""\
+You are a school assistant for a UK family. Answer the following question concisely in plain spoken English — no markdown, no bullet points. It will be read aloud by Alexa.
+
+{family_context}
+
+Current date and time: {now.strftime("%A %d %B %Y, %I:%M%p").lower()}
+
+Question: {query}
+
+Data (homework, timetable, announcements, calendar events for the relevant period):
+{json.dumps(data, indent=2, default=str)}"""
+        message = self._client.messages.create(
+            model=self._model,
+            max_tokens=256,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return message.content[0].text.strip()
+
     def synthesise_briefing(
         self, data: dict, for_date: date, now: datetime | None = None,
         prompt_template: str = BRIEFING_PROMPT

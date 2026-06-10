@@ -97,3 +97,41 @@ def test_fetch_all_filters_by_pupil_name(client):
     result = client.fetch_all(["Alice"], date(2026, 5, 20))
     assert all(h["pupil"] == "Alice Smith" for h in result["homework"])
     assert all(l["pupil"] == "Alice Smith" for l in result["timetable"])
+
+
+@resp.activate
+def test_fetch_range_spans_multiple_days(client):
+    resp.add(resp.GET, SITE_URL, body="")
+    resp.add(resp.POST, f"{BASE}/login", json=fixture("classcharts_login.json"))
+    resp.add(resp.GET, f"{BASE}/pupils", json=fixture("classcharts_pupils.json"))
+    resp.add(resp.GET, f"{BASE}/homeworks/11111", json=fixture("classcharts_homework.json"))
+    # Timetable called once per day in range (2 days)
+    resp.add(resp.GET, f"{BASE}/timetable/11111", json=fixture("classcharts_timetable.json"))
+    resp.add(resp.GET, f"{BASE}/timetable/11111", json=fixture("classcharts_timetable.json"))
+    resp.add(resp.GET, f"{BASE}/announcements/11111", json=fixture("classcharts_announcements.json"))
+
+    result = client.fetch_range(["Alice"], date(2026, 5, 20), date(2026, 5, 21))
+
+    assert len(result["homework"]) == 1
+    assert result["homework"][0]["pupil"] == "Alice Smith"
+    # Timetable entries include a date field
+    assert all("date" in l for l in result["timetable"])
+    # Two days fetched — deduplication within each day means 3 subjects × 2 days = 6 entries max
+    dates = {l["date"] for l in result["timetable"]}
+    assert dates == {"2026-05-20", "2026-05-21"}
+
+
+@resp.activate
+def test_fetch_range_deduplicates_within_day(client):
+    resp.add(resp.GET, SITE_URL, body="")
+    resp.add(resp.POST, f"{BASE}/login", json=fixture("classcharts_login.json"))
+    resp.add(resp.GET, f"{BASE}/pupils", json=fixture("classcharts_pupils.json"))
+    resp.add(resp.GET, f"{BASE}/homeworks/11111", json={"success": 1, "data": []})
+    resp.add(resp.GET, f"{BASE}/timetable/11111", json=fixture("classcharts_timetable.json"))
+    resp.add(resp.GET, f"{BASE}/announcements/11111", json=fixture("classcharts_announcements.json"))
+
+    result = client.fetch_range(["Alice"], date(2026, 5, 20), date(2026, 5, 20))
+
+    subjects = [l["subject"] for l in result["timetable"]]
+    # No duplicate subjects on the same day
+    assert len(subjects) == len(set(subjects))

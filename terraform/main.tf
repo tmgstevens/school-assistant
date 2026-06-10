@@ -105,7 +105,10 @@ resource "aws_iam_role_policy" "lambda" {
       {
         Effect   = "Allow"
         Action   = ["ssm:GetParameter"]
-        Resource = aws_ssm_parameter.briefing_prompt.arn
+        Resource = [
+          aws_ssm_parameter.briefing_prompt.arn,
+          aws_ssm_parameter.family_context.arn,
+        ]
       },
       {
         Effect   = "Allow"
@@ -138,7 +141,8 @@ resource "aws_lambda_function" "school_assistant" {
       GOOGLE_CALENDAR_SECRET_NAME = aws_secretsmanager_secret.google_calendar.name
       ANTHROPIC_SECRET_NAME       = aws_secretsmanager_secret.anthropic.name
       PUPIL_NAMES                 = var.pupil_names
-      PROMPT_PARAMETER_NAME       = aws_ssm_parameter.briefing_prompt.name
+      PROMPT_PARAMETER_NAME         = aws_ssm_parameter.briefing_prompt.name
+      FAMILY_CONTEXT_PARAMETER_NAME = aws_ssm_parameter.family_context.name
     }
   }
 

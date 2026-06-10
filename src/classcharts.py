@@ -8,7 +8,7 @@ from typing import Optional
 import requests
 
 SITE_URL = "https://www.classcharts.com/mobile/parent"
-ANNOUNCEMENT_DAYS = 14  # ignore announcements older than this
+ANNOUNCEMENT_DAYS = 60  # ignore announcements older than this
 
 
 def _strip_html(text: str) -> str:
@@ -151,6 +151,70 @@ class ClassChartsClient:
             )
             for ann in response.json().get("data", [])
         ]
+
+    def fetch_range(self, pupil_names: list[str], from_date: date, to_date: date) -> dict:
+        """Fetch all outstanding homework, 7-day timetable, and current announcements for queries."""
+        self.login()
+        all_pupils = self.get_pupils()
+        pupils = [
+            p for p in all_pupils
+            if any(name.lower() in p.name.lower() for name in pupil_names)
+        ] if pupil_names else all_pupils
+
+        result: dict = {"homework": [], "timetable": [], "announcements": []}
+        for pupil in pupils:
+            # No date params — returns all outstanding homework across the full future
+            response = self._session.get(
+                f"{BASE_URL}/homeworks/{pupil.id}",
+                params={"display_date": "due_date"},
+            )
+            response.raise_for_status()
+            for hw in response.json().get("data", []):
+                status = hw.get("status", {})
+                result["homework"].append({
+                    "subject": hw.get("subject", "Unknown"),
+                    "title": hw.get("title", ""),
+                    "description": _strip_html(hw.get("description", "")),
+                    "due_date": hw.get("due_date", ""),
+                    "pupil": pupil.name,
+                    "completed": status.get("ticked") == "yes",
+                })
+            # Timetable is per-day — loop across range
+            from datetime import timedelta
+            seen: set = set()
+            d = from_date
+            while d <= to_date:
+                for lesson in self.get_timetable(pupil, d):
+                    key = (lesson.pupil_name, d.isoformat(), lesson.subject)
+                    if key not in seen:
+                        seen.add(key)
+                        result["timetable"].append({
+                            "date": d.isoformat(),
+                            "subject": lesson.subject,
+                            "teacher": lesson.teacher,
+                            "room": lesson.room,
+                            "start": lesson.start_time,
+                            "pupil": lesson.pupil_name,
+                        })
+                d += timedelta(days=1)
+            # Announcements
+            cutoff = datetime.now(timezone.utc) - timedelta(days=ANNOUNCEMENT_DAYS)
+            for a in self.get_announcements(pupil):
+                try:
+                    ts = datetime.fromisoformat(a.timestamp.replace("Z", "+00:00"))
+                    if ts.tzinfo is None:
+                        ts = ts.replace(tzinfo=timezone.utc)
+                    if ts < cutoff:
+                        continue
+                except (ValueError, AttributeError):
+                    pass
+                result["announcements"].append({
+                    "title": a.title,
+                    "description": _strip_html(a.description),
+                    "pupil": a.pupil_name,
+                    "timestamp": a.timestamp,
+                })
+        return result
 
     def fetch_all(self, pupil_names: list[str], for_date: date) -> dict:
         self.login()

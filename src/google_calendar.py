@@ -37,12 +37,7 @@ class GoogleCalendarClient:
         resp.raise_for_status()
         self._access_token = resp.json()["access_token"]
 
-    def get_today_events(self, for_date: date) -> list[CalendarEvent]:
-        time_min = datetime(for_date.year, for_date.month, for_date.day,
-                            0, 0, 0, tzinfo=timezone.utc).isoformat()
-        time_max = datetime(for_date.year, for_date.month, for_date.day,
-                            23, 59, 59, tzinfo=timezone.utc).isoformat()
-
+    def _fetch_events(self, time_min: str, time_max: str) -> list[CalendarEvent]:
         resp = requests.get(CALENDAR_URL, headers={
             "Authorization": f"Bearer {self._access_token}",
         }, params={
@@ -52,7 +47,6 @@ class GoogleCalendarClient:
             "orderBy": "startTime",
         }, timeout=10)
         resp.raise_for_status()
-
         events = []
         for item in resp.json().get("items", []):
             all_day = "date" in item["start"] and "dateTime" not in item["start"]
@@ -66,3 +60,17 @@ class GoogleCalendarClient:
                 attendees=attendees,
             ))
         return events
+
+    def get_today_events(self, for_date: date) -> list[CalendarEvent]:
+        time_min = datetime(for_date.year, for_date.month, for_date.day,
+                            0, 0, 0, tzinfo=timezone.utc).isoformat()
+        time_max = datetime(for_date.year, for_date.month, for_date.day,
+                            23, 59, 59, tzinfo=timezone.utc).isoformat()
+        return self._fetch_events(time_min, time_max)
+
+    def get_events_range(self, from_date: date, to_date: date) -> list[CalendarEvent]:
+        time_min = datetime(from_date.year, from_date.month, from_date.day,
+                            0, 0, 0, tzinfo=timezone.utc).isoformat()
+        time_max = datetime(to_date.year, to_date.month, to_date.day,
+                            23, 59, 59, tzinfo=timezone.utc).isoformat()
+        return self._fetch_events(time_min, time_max)

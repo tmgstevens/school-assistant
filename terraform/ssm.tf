@@ -5,3 +5,9 @@ resource "aws_ssm_parameter" "briefing_prompt" {
     family_context = var.family_context
   })
 }
+
+resource "aws_ssm_parameter" "family_context" {
+  name  = "/school-assistant/family-context"
+  type  = "String"
+  value = var.family_context
+}
