@@ -1,4 +1,4 @@
-.PHONY: venv install build deploy test clean
+.PHONY: venv install build deploy test evals clean
 
 VENV    := .venv
 PYTHON  := $(VENV)/bin/python
@@ -34,6 +34,9 @@ deploy:
 
 test:
 	PYTHONPATH=src $(PYTEST) tests/ -v
+
+evals:
+	PYTHONPATH=src $(PYTEST) tests/evals -m llm_eval -v -s
 
 clean:
 	rm -rf build lambda.zip __pycache__ .pytest_cache

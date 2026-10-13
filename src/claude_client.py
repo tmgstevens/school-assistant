@@ -62,7 +62,14 @@ class ClaudeClient:
         self._client = anthropic.Anthropic(api_key=api_key)
         self._model = model
 
-    def answer_query(self, query: str, data: dict, now: datetime, family_context: str = "") -> str:
+    @staticmethod
+    def _text(message) -> str:
+        # Reasoning models emit a ThinkingBlock before the text block.
+        return next(b.text for b in message.content if b.type == "text").strip()
+
+    def answer_query(
+        self, query: str, data: dict, now: datetime, family_context: str = "", max_tokens: int = 256
+    ) -> str:
         prompt = f"""\
 You are a school assistant for a UK family. Answer the following question concisely in plain spoken English — no markdown, no bullet points. It will be read aloud by Alexa.
 
@@ -76,14 +83,14 @@ Data (homework, timetable, announcements, calendar events for the relevant perio
 {json.dumps(data, indent=2, default=str)}"""
         message = self._client.messages.create(
             model=self._model,
-            max_tokens=256,
+            max_tokens=max_tokens,
             messages=[{"role": "user", "content": prompt}],
         )
-        return message.content[0].text.strip()
+        return self._text(message)
 
     def synthesise_briefing(
         self, data: dict, for_date: date, now: datetime | None = None,
-        prompt_template: str = BRIEFING_PROMPT
+        prompt_template: str = BRIEFING_PROMPT, max_tokens: int = 512,
     ) -> str:
         prompt = prompt_template.format(
             briefing_date=for_date.strftime("%A %d %B %Y"),
@@ -92,7 +99,7 @@ Data (homework, timetable, announcements, calendar events for the relevant perio
         )
         message = self._client.messages.create(
             model=self._model,
-            max_tokens=512,
+            max_tokens=max_tokens,
             messages=[{"role": "user", "content": prompt}],
         )
-        return message.content[0].text.strip()
+        return self._text(message)
