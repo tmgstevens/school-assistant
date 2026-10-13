@@ -27,16 +27,21 @@ def run_gemini(prompt: str, model: str) -> str:
     return response.text.strip()
 
 
-CLAUDE_MODELS = [
-    "claude-opus-4-8",
-    "claude-sonnet-4-6",
-    "claude-haiku-4-5-20251001",
-]
+def run_openai(prompt: str, model: str) -> str:
+    from openai import OpenAI
+    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    response = client.responses.create(model=model, input=prompt, max_output_tokens=2048)
+    return response.output_text.strip()
 
-GEMINI_MODELS = [
-    "gemini-3.1-flash-lite-preview",
-    "gemma-4-26b-a4b-it",
-    "gemma-4-31b-it",
+
+CLAUDE_MODELS = []  # already benchmarked this run; skipping to save time/cost
+
+GEMINI_MODELS = []  # already benchmarked this run; skipping to save time/cost
+
+OPENAI_MODELS = [
+    "gpt-5.4-nano",
+    "gpt-5.4-mini",
+    "gpt-5.4",
 ]
 
 print("Fetching data from ClassCharts and Google Calendar...")
@@ -81,11 +86,16 @@ for model in CLAUDE_MODELS:
     t1 = time.time()
     message = claude_client.messages.create(
         model=model,
-        max_tokens=512,
+        max_tokens=2048,
         messages=[{"role": "user", "content": full_prompt}],
     )
     elapsed = time.time() - t1
-    result = message.content[0].text.strip()
+    text_blocks = [b.text for b in message.content if b.type == "text"]
+    if not text_blocks:
+        print(f"  {model}: no text block, stop_reason={message.stop_reason}, "
+              f"content_types={[b.type for b in message.content]}")
+        continue
+    result = text_blocks[0].strip()
     usage = message.usage
     print(f"{'─' * 60}")
     print(f"  {model}  ({elapsed:.2f}s)  in={usage.input_tokens} out={usage.output_tokens}")
@@ -101,4 +111,14 @@ for model in GEMINI_MODELS:
     print(f"  {model}  ({elapsed:.2f}s)")
     print(f"{'─' * 60}")
     print(result)
+    print()
+
+for model in OPENAI_MODELS:
+    t1 = time.time()
+    result = run_openai(full_prompt, model)
+    elapsed = time.time() - t1
+    print(f"{'─' * 60}")
+    print(f"  {model}  ({elapsed:.2f}s)")
+    print(f"{'─' * 60}")
+    print(result if result else "(empty output_text — likely ran out of budget on reasoning tokens)")
     print()
